@@ -6,10 +6,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class RequestDto {
+    long pw;
     String title;
     String content;
     String person;
-    long pw;
     long date;
 
 
@@ -40,4 +40,7 @@ public class RequestDto {
     public long getDate() {
         return date;
     }
+
+
+
 }

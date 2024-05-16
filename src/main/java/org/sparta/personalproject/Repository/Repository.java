@@ -1,6 +1,5 @@
 package org.sparta.personalproject.Repository;
 
-import org.sparta.personalproject.controller.Pw;
 import org.sparta.personalproject.controller.entity.Schedule;
 import org.sparta.personalproject.dto.RequestDto;
 import org.sparta.personalproject.dto.ResponseDto;
@@ -8,8 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

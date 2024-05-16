@@ -14,11 +14,11 @@ import java.util.List;
 @RequestMapping("/api")
 public class Controller {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final Service service;
 
 
-    public Controller(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public Controller(JdbcTemplate jdbcTemplate) throws SQLException {
+       this.service = new Service(jdbcTemplate);
     }
 
     /*
@@ -26,7 +26,7 @@ public class Controller {
      */
     @PostMapping("/schedules")
     public ResponseDto createSchedule(@RequestBody RequestDto requestDto) throws SQLException {
-        Service service = new Service(jdbcTemplate);
+
         return service.createSchedule(requestDto);
     }
 
@@ -35,7 +35,7 @@ public class Controller {
      */
     @GetMapping("/schedules/{id}")
     public ResponseDto getSchedule(@PathVariable long id) throws SQLException {
-        Service service = new Service(jdbcTemplate);
+
         return service.getSchedule(id);
     }
 
@@ -44,7 +44,7 @@ public class Controller {
      */
     @GetMapping("/schedules")
     public List<ResponseDto> getSchedulelist() throws SQLException {
-        Service service = new Service(jdbcTemplate);
+
         return service.getSchedulelist();
     }
 
@@ -54,7 +54,7 @@ public class Controller {
 //     */
     @PutMapping("/schedules/{id}")
     public ResponseDto updateSchedule(@PathVariable long id, @RequestBody RequestDto requestDto) throws SQLException {
-        Service service = new Service(jdbcTemplate);
+
         return service.updateSchedule(id, requestDto);
     }
 
@@ -64,7 +64,7 @@ public class Controller {
 //     */
     @DeleteMapping("/schedules/{id}")
     public ResponseDto deleteSchedule(@PathVariable long id, @RequestBody Pw pw) throws SQLException {
-        Service service = new Service(jdbcTemplate);
+
         return service.deleteSchedule(id, pw);
     }
 }

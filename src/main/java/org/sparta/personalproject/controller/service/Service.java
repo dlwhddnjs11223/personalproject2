@@ -13,37 +13,38 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class Service {
-    private final JdbcTemplate jdbcTemplate;
+
+    private final Repository repository;
 
     public Service(JdbcTemplate jdbcTemplate) throws SQLException {
-        this.jdbcTemplate = jdbcTemplate;
+        this.repository = new Repository(jdbcTemplate);
     }
 
     public ResponseDto createSchedule(RequestDto requestDto) {
 
         Schedule schedule = new Schedule(requestDto);
-        Repository repository = new Repository(jdbcTemplate);
+
         return repository.addSchedule(schedule);
 
 
     }
 
     public ResponseDto getSchedule(long id) {
-        Repository repository = new Repository(jdbcTemplate);
+
         Schedule schedule = repository.findSchedule(id);
         ResponseDto responseDto = new ResponseDto(schedule);
         return responseDto;
     }
 
     public List<ResponseDto> getSchedulelist() {
-        Repository repository = new Repository(jdbcTemplate);
+
         return repository.getSchedulelist();
 
     }
 
     public ResponseDto updateSchedule(@PathVariable long id, @RequestBody RequestDto requestDto) {
 
-        Repository repository = new Repository(jdbcTemplate);
+
         Schedule schedule = repository.findSchedule(id);
         if (schedule != null && schedule.getPw() == requestDto.getPw()) {
             return repository.updateSchedule(id, requestDto);
@@ -54,7 +55,7 @@ public class Service {
 
     public ResponseDto deleteSchedule(long id, Pw pw) {
         // 해당 schedule 가져오기
-        Repository repository = new Repository(jdbcTemplate);
+
         Schedule schedule = repository.findSchedule(id);
         if (schedule != null && schedule.getPw() == pw.getPw()) {
             return repository.deleteSchedule(id);

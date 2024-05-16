@@ -1,7 +1,8 @@
-package org.sparta.personalproject.controller;
+package org.sparta.personalproject.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.sparta.personalproject.controller.entity.Schedule;
 
 @Getter
 @NoArgsConstructor

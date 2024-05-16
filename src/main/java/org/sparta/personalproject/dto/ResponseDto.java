@@ -1,8 +1,8 @@
-package org.sparta.personalproject.controller;
+package org.sparta.personalproject.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.sparta.personalproject.controller.entity.Schedule;
 
 @Setter
 @Getter
@@ -14,11 +14,19 @@ public class ResponseDto {
     long date;
 
     public ResponseDto(Schedule schedule) {
-       this.id=schedule.getId();
+        this.id=schedule.getId();
         this.title = schedule.getTitle();
         this.content = schedule.getContent();
         this.person = schedule.getPerson();
         this.date = schedule.getDate();
     }
 
+    public ResponseDto(Long id, String title, String content, String person, Long date) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.person = person;
+        this.date = date;
+
+    }
 }

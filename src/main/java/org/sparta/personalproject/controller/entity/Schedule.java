@@ -1,7 +1,8 @@
-package org.sparta.personalproject.controller;
+package org.sparta.personalproject.controller.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.sparta.personalproject.dto.RequestDto;
 
 @Setter
 @Getter
@@ -21,6 +22,9 @@ public class Schedule {
         this.date = requestDto.getDate();
     }
 
+    public Schedule() {
+
+    }
 
 
     public void update(RequestDto requestDto) {

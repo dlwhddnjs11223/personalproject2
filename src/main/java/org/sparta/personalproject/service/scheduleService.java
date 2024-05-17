@@ -1,7 +1,7 @@
 package org.sparta.personalproject.service;
 
 
-import org.sparta.personalproject.Repository.Repository;
+import org.sparta.personalproject.Repository.scheduleRepository;
 import org.sparta.personalproject.controller.Pw;
 import org.sparta.personalproject.dto.RequestDto;
 import org.sparta.personalproject.dto.ResponseDto;
@@ -10,38 +10,38 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @org.springframework.stereotype.Service
-public class Service {
+public class scheduleService {
 
 
-    private final Repository repository;
+    private final scheduleRepository scheduleRepository;
 
-    public Service(Repository repository) {
-        this.repository = repository;
+    public scheduleService(scheduleRepository scheduleRepository) {
+        this.scheduleRepository = scheduleRepository;
     }
 
     public ResponseDto createSchedule(RequestDto requestDto) {
         Schedule schedule = new Schedule(requestDto);
-        repository.save(schedule);
+        scheduleRepository.save(schedule);
         return new ResponseDto(schedule);
     }
 
-
-    public Optional<Schedule> getSchedule(long id) {
-        Optional<Schedule> schedule = repository.findById(id);
+    public Schedule getSchedule(long id) {
+        Schedule schedule = findSchedule(id);
         return schedule;
     }
 
     public List<ResponseDto> getSchedulelist() {
-        return  repository.findAll().stream().sorted(Comparator.comparing(Schedule::getDate)).map(ResponseDto::new).toList();
+        return  scheduleRepository.findAll().stream().sorted(Comparator.comparing(Schedule::getCreatedAt)).map(ResponseDto::new).toList();
+    }
 
-
+    public List<ResponseDto> findScheduleByContent(String content) {
+        return  scheduleRepository.findAllByContentContains(content);
     }
 
     @Transactional
-    public ResponseDto updateSchedule(long id, RequestDto requestDto) {
+    public ResponseDto updateSchedule(Long id, RequestDto requestDto) {
         Schedule schedule = findSchedule(id);
 
         if (schedule.getPw() == requestDto.getPw()) {
@@ -54,17 +54,17 @@ public class Service {
         return new ResponseDto(schedule);
     }
 
-    public ResponseDto deleteSchedule(long id, Pw pw) {
+    public ResponseDto deleteSchedule(Long id, Pw pw) {
         Schedule schedule = findSchedule(id);
         if (schedule.getPw() == pw.getPw()) {
-            repository.delete(schedule);
+            scheduleRepository.delete(schedule);
             return new ResponseDto(schedule);
         } else {
             throw new IllegalArgumentException("비번 안맞음.");
         }
     }
 
-    private Schedule findSchedule(long id) {
-        return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("없음"));
+    private Schedule findSchedule(Long id) {
+        return scheduleRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("없음"));
     }
 }

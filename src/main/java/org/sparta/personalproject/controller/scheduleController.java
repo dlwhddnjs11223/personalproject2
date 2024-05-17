@@ -1,25 +1,22 @@
 package org.sparta.personalproject.controller;
 
-import org.sparta.personalproject.Repository.Repository;
-import org.sparta.personalproject.entity.Schedule;
-import org.sparta.personalproject.service.Service;
 import org.sparta.personalproject.dto.RequestDto;
 import org.sparta.personalproject.dto.ResponseDto;
+import org.sparta.personalproject.entity.Schedule;
+import org.sparta.personalproject.service.scheduleService;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
 @RequestMapping("/api")
-public class Controller {
+public class scheduleController {
 
-    private final Service service;
+    private final scheduleService service;
 
 
-    public Controller(Service service)  {
+    public scheduleController(scheduleService service)  {
        this.service = service;
 
     }
@@ -37,7 +34,7 @@ public class Controller {
     2단계
      */
     @GetMapping("/schedules/{id}")
-    public Optional<Schedule> getSchedule(@PathVariable long id)  {
+    public Schedule getSchedule(@PathVariable long id)  {
 
         return service.getSchedule(id);
     }
@@ -51,11 +48,17 @@ public class Controller {
         return service.getSchedulelist();
     }
 
+    @GetMapping("/schedules/param")
+    public List<ResponseDto> findScheduleByContent(String content)  {
+
+        return service.findScheduleByContent(content);
+    }
+
 
 //    /*
 //    4단계
 //     */
-    @PutMapping("/schedules/{id}")
+    @PutMapping("/schedules/param")
     public ResponseDto updateSchedule(@PathVariable long id, @RequestBody RequestDto requestDto)  {
 
         return service.updateSchedule(id, requestDto);

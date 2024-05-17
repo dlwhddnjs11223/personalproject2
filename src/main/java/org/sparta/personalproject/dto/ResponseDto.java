@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.sparta.personalproject.entity.Schedule;
 
+import java.time.LocalDateTime;
+
 
 @Setter
 @Getter
@@ -13,22 +15,19 @@ public class ResponseDto {
     String content;
     String person;
     long date;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 
     public ResponseDto(Schedule schedule) {
-        this.id=schedule.getId();
+        this.id = schedule.getId();
         this.title = schedule.getTitle();
         this.content = schedule.getContent();
         this.person = schedule.getPerson();
         this.date = schedule.getDate();
+        this.createdAt = schedule.getCreatedAt();
+        this.modifiedAt = schedule.getModifiedAt();
     }
 
-    public ResponseDto(Long id, String title, String content, String person, Long date) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.person = person;
-        this.date = date;
-    }
 }
 
 

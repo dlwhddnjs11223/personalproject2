@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @Table(name = "schedule") // 매핑할 테이블의 이름을 지정
 @NoArgsConstructor
-public class Schedule {
+public class Schedule extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,12 +27,14 @@ public class Schedule {
     @Column(name = "pw", nullable = false)
     private long pw;
 
+
     public Schedule(RequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.person = requestDto.getPerson();
         this.pw = requestDto.getPw();
         this.date = requestDto.getDate();
+
     }
 
         public void update(RequestDto requestDto) {

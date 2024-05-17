@@ -8,6 +8,7 @@ import org.sparta.personalproject.dto.ResponseDto;
 import org.sparta.personalproject.entity.Schedule;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +35,8 @@ public class Service {
     }
 
     public List<ResponseDto> getSchedulelist() {
-        return repository.findAll().stream().map(ResponseDto::new).toList();
+        return  repository.findAll().stream().sorted(Comparator.comparing(Schedule::getDate)).map(ResponseDto::new).toList();
+
 
     }
 

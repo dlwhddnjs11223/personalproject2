@@ -19,8 +19,8 @@ public class Controller {
     private final Service service;
 
 
-    public Controller(Repository repository) throws SQLException {
-       this.service = new Service(repository);
+    public Controller(Service service)  {
+       this.service = service;
 
     }
 
@@ -28,7 +28,7 @@ public class Controller {
     1단계
      */
     @PostMapping("/schedules")
-    public ResponseDto createSchedule(@RequestBody RequestDto requestDto) throws SQLException {
+    public ResponseDto createSchedule(@RequestBody RequestDto requestDto) {
 
         return service.createSchedule(requestDto);
     }

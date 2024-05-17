@@ -2,7 +2,8 @@ package org.sparta.personalproject.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.sparta.personalproject.controller.entity.Schedule;
+import org.sparta.personalproject.entity.Schedule;
+
 
 @Setter
 @Getter
@@ -27,6 +28,7 @@ public class ResponseDto {
         this.content = content;
         this.person = person;
         this.date = date;
-
     }
 }
+
+

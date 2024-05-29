@@ -1,4 +1,4 @@
-package org.sparta.personalproject.controller;
+package org.sparta.personalproject.todo.dto;
 
 import lombok.Getter;
 import lombok.Setter;

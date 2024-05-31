@@ -3,13 +3,12 @@ package org.sparta.personalproject.security.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sparta.personalproject.User.UserRoleEnum;
+import org.sparta.personalproject.entity.UserRoleEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -31,16 +30,18 @@ public class JwtUtil {
     // Header KEY 값
     public static final String AUTHORIZATION_HEADER = "Authorization";
     // Header KEY 값
-    public static final String AUTHORIZATION_COOKIE = "Refresh";
+    public static final String REFRESH_HEADER = "Refresh";
     // 사용자 권한 값의 KEY
     public static final String AUTHORIZATION_KEY = "auth";
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
+    // Token 식별자
+    public static final String REFRESH = "Rfresh ";
     // 토큰 만료시간
-    private final long ACCESSTOKEN_TIME = 60 * 60 * 1000L; // 60분
+    private final long ACCESSTOKEN_TIME = 1 * 30 * 1000L; // 60분
 
     // 토큰 만료시간
-    private final long REFRESHTOKEN_TIME = 60 * 60 * 10000L; // 600분
+    private final long REFRESHTOKEN_TIME = 10 * 60 * 1000L; // 600분
 
     @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
     private String secretKey;
@@ -70,6 +71,7 @@ public class JwtUtil {
                         .compact();
     }
 
+
     public String createRefreshToken() {
         Date date = new Date();
 
@@ -82,10 +84,9 @@ public class JwtUtil {
     }
 
 
-    public void addJwtToHeader(String token, HttpServletResponse res) {
+    public void addAccessJwtToHeader(String token, HttpServletResponse res) {
         try {
             token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20"); // Cookie Value 에는 공백이 불가능해서 encoding 진행
-
 
             res.setHeader(AUTHORIZATION_HEADER, token);
         } catch (UnsupportedEncodingException e) {
@@ -94,15 +95,11 @@ public class JwtUtil {
     }
 
 
-    public void addJwtToCookie(String token, HttpServletResponse res) {
+    public void addRefreshJwtToHeader(String token, HttpServletResponse res) {
         try {
             token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20"); // Cookie Value 에는 공백이 불가능해서 encoding 진행
 
-            Cookie cookie = new Cookie(AUTHORIZATION_COOKIE, token); // Name-Value
-            cookie.setPath("/");
-
-            // Response 객체에 Cookie 추가
-            res.addCookie(cookie);
+            res.setHeader(REFRESH_HEADER, token);
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getMessage());
         }
@@ -110,13 +107,24 @@ public class JwtUtil {
 
     // Cookie에 들어있던 JWT 토큰을 Substring
 
-    public String substringToken(String tokenValue) {
+    public String substringAccessToken(String tokenValue) {
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
             return tokenValue.substring(7);
         }
         logger.error("Not Found Token");
         throw new NullPointerException("토큰이 유효하지 않습니다.");
     }
+
+    public String substringRefreshToken(String tokenValue) {
+        if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
+            return tokenValue.substring(7);
+        }
+        logger.error("Not Found Token");
+        throw new NullPointerException("토큰이 유효하지 않습니다.");
+    }
+
+
+
 
     // JWT 검증
 
@@ -126,61 +134,74 @@ public class JwtUtil {
             return true;
         } catch (SecurityException | MalformedJwtException | SignatureException | ExpiredJwtException |
                  UnsupportedJwtException | IllegalArgumentException e) {
-            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
+            log.error(" : Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
         }
+
         return false;
 
     }
+
     public boolean validateRefreshToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (SecurityException | MalformedJwtException | SignatureException | ExpiredJwtException |
+        } catch (SecurityException | MalformedJwtException | SignatureException |
                  UnsupportedJwtException | IllegalArgumentException e) {
-            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
-        }
-        return false;
-    }
-        // JWT에서 사용자 정보 가져오기
+            log.error("리프레쉬 토큰 : Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
+        } catch (ExpiredJwtException e) {
+            throw new IllegalArgumentException("재로그인 해주세요.");
 
-        public Claims getUserInfoFromToken (String token){
+        }
+
+        return false;
+
+    }
+
+
+    // JWT에서 사용자 정보 가져오기
+
+    public Claims getUserInfoFromToken(String token) {
+        try {
+            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        } catch (ExpiredJwtException e) {
+            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
             return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         }
 
-        // HttpServletRequest 에서 Cookie Value : JWT 가져오기
-        public String getTokenFromHeader (HttpServletRequest req){
+    }
 
-            String header = req.getHeader("Authorization");
+    // HttpServletRequest 에서 Cookie Value : JWT 가져오기
+    public String getAccessTokenFromHeader(HttpServletRequest req) {
 
-            System.out.println(header);
-            if (StringUtils.isEmpty(header)) {
+        String header = req.getHeader("Authorization");
 
-                return null;
-            }
-            try {
-                return URLDecoder.decode(header, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                return null;
-            }
+
+        if (StringUtils.isEmpty(header)) {
+
+            return null;
         }
-
-        public String getTokenFromCookie (HttpServletRequest req){
-
-            Cookie[] cookies = req.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals(AUTHORIZATION_COOKIE)) {
-                        try {
-                            return URLDecoder.decode(cookie.getValue(), "UTF-8"); // Encode 되어 넘어간 Value 다시 Decode
-                        } catch (UnsupportedEncodingException e) {
-                            return null;
-                        }
-                    }
-                }
-            }
+        try {
+            return URLDecoder.decode(header, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
             return null;
         }
     }
+
+    public String getRefreshTokenFromHeader(HttpServletRequest req) {
+        String header = req.getHeader("Refresh");
+
+
+        if (StringUtils.isEmpty(header)) {
+
+            return null;
+        }
+        try {
+            return URLDecoder.decode(header, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
+    }
+}
 
 
 

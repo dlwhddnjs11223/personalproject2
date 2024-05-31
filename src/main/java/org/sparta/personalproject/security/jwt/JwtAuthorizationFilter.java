@@ -7,6 +7,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.sparta.personalproject.entity.User;
+import org.sparta.personalproject.entity.UserRoleEnum;
+import org.sparta.personalproject.entity.RefreshToken;
+import org.sparta.personalproject.service.RefreshTokenService;
 import org.sparta.personalproject.security.entity.UserDetailsServiceImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,32 +27,60 @@ import java.io.IOException;
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RefreshTokenService refreshTokenService;
     private final UserDetailsServiceImpl userDetailsService;
 
 
-
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest req,
+                                    HttpServletResponse res,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
 
         //req에서 jwt를 찾고
-        String tokenValue = jwtUtil.getTokenFromHeader(req);
+        String accesstokenValue = jwtUtil.getAccessTokenFromHeader(req);
 
 
         // 찾은 jwt를 substring
-        if (StringUtils.hasText(tokenValue)) {
+        if (StringUtils.hasText(accesstokenValue)) {
             // JWT 토큰 substring
-            tokenValue = jwtUtil.substringToken(tokenValue);
-            log.info(tokenValue);
+            accesstokenValue = jwtUtil.substringAccessToken(accesstokenValue);
 
-            if (!jwtUtil.validateAccessToken(tokenValue)) {
-                log.error("Token Error");
-//                if(checkRefreshToken(req, res);
-                return;
+            if (!jwtUtil.validateAccessToken(accesstokenValue)) { // 액세스 토큰이 유효하지 않으면
+
+                log.error("액세스 토큰 만료");
+
+                //
+                String RefreshTokenValue = jwtUtil.getRefreshTokenFromHeader(req);
+
+
+                if (StringUtils.hasText(RefreshTokenValue)) {
+                    // JWT 토큰 substring
+
+                    RefreshTokenValue = jwtUtil.substringRefreshToken(RefreshTokenValue);
+                    if (!jwtUtil.validateRefreshToken(RefreshTokenValue)) {
+                        throw new IllegalArgumentException("리프레쉬 토큰이 만료됐음. 다시 로그인");
+                    }
+
+                    RefreshToken refreshToken = refreshTokenService.findByRefreshToken(RefreshTokenValue);
+                    log.info("DB 기존 리프레쉬 토큰"+refreshToken.getRefreshToken());
+                    User user = refreshToken.getUser();
+                    String username = user.getUsername();
+                    UserRoleEnum Role = user.getRole();
+
+                    accesstokenValue = jwtUtil.createAccessToken(username, Role);
+                    RefreshTokenValue = refreshTokenService.updateRefreshToken(refreshToken);
+                    log.info("DB 새로운 리프레쉬 토큰"+refreshToken.getRefreshToken());
+
+                    jwtUtil.addAccessJwtToHeader(accesstokenValue, res);
+                    jwtUtil.addRefreshJwtToHeader(RefreshTokenValue, res);
+
+
+                }
             }
-            // jwt에서 사용자 정보를 읽어오고
-            Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
+            String newAccesstokenValue = jwtUtil.substringAccessToken(accesstokenValue);
+            log.info("새로운 액세스 토큰:"+ newAccesstokenValue );
+            Claims info = jwtUtil.getUserInfoFromToken(newAccesstokenValue);
 
             try {
                 setAuthentication(info.getSubject());
@@ -58,24 +90,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
         filterChain.doFilter(req, res);
     }
 
-    public void checkRefreshToken(HttpServletRequest req, Authentication authResult)  {
-        String tokenValue = jwtUtil.getTokenFromCookie(req);
-        String refreshToken =
 
-                String accessToken = jwtUtil.createAccessToken(username, role);
-        String refreshToken = jwtUtil.createRefreshToken();
-
-        jwtUtil.addJwtToHeader(accessToken, response);
-        jwtUtil.addJwtToCookie(refreshToken, response);
-
-    }
-
-
-    // 인증 처리 = security context holder 생성해주는 것
+    //  인증 처리 = security context holder 생성해주는 것
     public void setAuthentication(String username) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication authentication = createAuthentication(username);

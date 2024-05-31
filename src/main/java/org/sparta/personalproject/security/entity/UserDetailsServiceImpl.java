@@ -1,7 +1,7 @@
 package org.sparta.personalproject.security.entity;
 
-import org.sparta.personalproject.User.User;
-import org.sparta.personalproject.User.UserRepository;
+import org.sparta.personalproject.entity.User;
+import org.sparta.personalproject.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

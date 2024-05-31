@@ -8,8 +8,8 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.sparta.personalproject.User.LoginRequestDto;
-import org.sparta.personalproject.User.UserRoleEnum;
+import org.sparta.personalproject.dto.LoginRequestDto;
+import org.sparta.personalproject.entity.UserRoleEnum;
 import org.sparta.personalproject.security.entity.UserDetailsImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -53,12 +53,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         log.info("로그인 성공 및 JWT 생성");
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
-
+//
         String accessToken = jwtUtil.createAccessToken(username, role);
         String refreshToken = jwtUtil.createRefreshToken();
 
-        jwtUtil.addJwtToHeader(accessToken, response);
-        jwtUtil.addJwtToCookie(refreshToken, response);
+        jwtUtil.addAccessJwtToHeader(accessToken, response);
+        jwtUtil.addRefreshJwtToHeader(refreshToken, response);
 
         // 1. 메서드 종료도미ㅕㄴ dofilter가 없기때문에 이대로 클라이언트한테 반환?
         // 2. 다음 필터로 이동 시킨다 하더라도 이 요청에 대해서는 인증이 필요 없다고 허가를 내려놓은 상태.

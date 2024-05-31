@@ -1,5 +1,6 @@
 package org.sparta.personalproject.security.config;
 
+import org.sparta.personalproject.service.RefreshTokenService;
 import org.sparta.personalproject.security.entity.UserDetailsServiceImpl;
 import org.sparta.personalproject.security.jwt.JwtAuthenticationFilter;
 import org.sparta.personalproject.security.jwt.JwtAuthorizationFilter;
@@ -22,12 +23,14 @@ public class WebSecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
+    private final RefreshTokenService refreshTokenService;
     private final AuthenticationConfiguration authenticationConfiguration;
 
-    public WebSecurityConfig(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, AuthenticationConfiguration authenticationConfiguration) {
+    public WebSecurityConfig(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, AuthenticationConfiguration authenticationConfiguration, RefreshTokenService refreshTokenService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.authenticationConfiguration = authenticationConfiguration;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Bean
@@ -46,7 +49,7 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtUtil, userDetailsService);
+        return new JwtAuthorizationFilter(jwtUtil, refreshTokenService, userDetailsService );
     }
 
     @Bean
@@ -65,10 +68,7 @@ public class WebSecurityConfig {
                         .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
 
-//        http.formLogin((formLogin) ->
-//                formLogin
-//                        .loginPage("/api/user/login-page").permitAll()
-//        );
+
 
 //         필터 관리
         http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class); // 인가
